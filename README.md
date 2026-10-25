@@ -1,1 +1,1 @@
-This  project is  rag based research assistend. this is bulid by using the mainly python . recrsuive character basd chunking , using the chromadb as database and ollma as the LLm ti better query reponse 
+This project is a RAG-based research assistant built primarily using Python. It uses recursive character-based text chunking, ChromaDB as the vector database, and Ollama as the LLM to provide more relevant and accurate responses to user queries.
