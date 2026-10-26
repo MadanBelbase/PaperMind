@@ -18,9 +18,9 @@ def retrieve_global_knowledge() -> str:
         
         compiled_summaries = []
         for doc, meta in zip(results["documents"], results["metadatas"]):
-            compiled_summaries.append(f"📄 Paper: {meta['source']}\n{doc}\n")
+            compiled_summaries.append(f" Paper: {meta['source']}\n{doc}\n")
         
-        return "\n=========================================\n".join(compiled_summaries)
+        return "\n".join(compiled_summaries)
     except Exception:
         return ""
 
@@ -60,7 +60,7 @@ def ask_rag_engine(user_question: str, mode: str = "deep"):
         print("⚠️ No database context available. Please verify your collection loads.")
         return
 
-    full_system_prompt = f"{system_instruction}\n\n--- REFERENCE CONTEXT MATERIAL ---\n{context}\n-----------------------------------\n"
+    full_system_prompt = f"{system_instruction}\n\n{context}\"
 
     print(f"🧠 Computing with Ollama ({OLLAMA_MODEL})...\n")
     try:
@@ -72,18 +72,16 @@ def ask_rag_engine(user_question: str, mode: str = "deep"):
         )
 
         print("🤖 PaperMind Answer:")
-        print("=======================================================")
         for chunk in response_stream:
             print(chunk["response"], end="", flush=True)
-        print("\n=======================================================")
     except Exception as e:
-        print(f"❌ Execution error: {e}")
+        print(f" Execution error: {e}")
 
 
 if __name__ == "__main__":
-    print("🚀 PaperMind Hybrid RAG Engine Online.")
-    print("👉 Standard mode: Searches inside individual page snippets.")
-    print("👉 Global mode: Type 'global ' before your question to look across ALL papers details.")
+    print("PaperMind Hybrid RAG Engine Online.")
+    print("Standard mode: Searches inside individual page snippets.")
+    print("Global mode: Type 'global ' before your question to look across ALL papers details.")
 
     while True:
         query = input("\nAsk PaperMind (or 'exit'): ").strip()
