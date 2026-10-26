@@ -11,28 +11,21 @@ DB_DIR = BASE_DIR / "chroma_db"
 
 
 def process_single_pdf(pdf_path: Path, chunk_size: int, chunk_overlap: int) -> list[dict]:
-    """
-    Worker function executed in parallel across CPU cores.
-    Parses pages, triggers OCR fallback, and tracks clean metadata matrices.
-    """
     pymupdf.TOOLS.mupdf_display_errors(False)
-    
     try:
         doc = pymupdf.open(pdf_path)
         page_chunks_accumulator = []
         chunker = AcademicTextChunker(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
-        
         for page in doc:
             try:
                 page_text = page.get_text()
                 if not page_text.strip():
                     page_text = page.get_text("text", flags=pymupdf.TEXTFLAGS_SEARCH)
             except Exception as page_err:
-                print(f"   ⚠️ Error reading Page {page.number + 1} in {pdf_path.name}: {page_err}")
+                print(f"Error reading Page {page.number + 1} in {pdf_path.name}: {page_err}")
                 page_text = ""
             
             if page_text.strip():
-                # Split on a per-page level to capture context accurately
                 raw_page_chunks = chunker.split_text(page_text)
                 for index, chunk in enumerate(raw_page_chunks):
                     page_chunks_accumulator.append({
@@ -43,11 +36,9 @@ def process_single_pdf(pdf_path: Path, chunk_size: int, chunk_overlap: int) -> l
                             "chunk_segment_id": index
                         }
                     })
-        
         doc.close()
-        
         if not page_chunks_accumulator:
-            print(f"   Diagnostic Alert: '{pdf_path.name}' yielded zero text. Ensure Tesseract OCR is system configured.")
+            print(f"Diagnostic Alert: '{pdf_path.name}' yielded zero text. Ensure Tesseract OCR is system configured.")
             
         return page_chunks_accumulator
 
@@ -129,6 +120,6 @@ if __name__ == "__main__":
             documents=batch_documents,
             metadatas=batch_metadatas
         )
-        print(f"📦 [BATCH {batch_idx}] Successfully wrote {len(document_batch)} vector payloads to ChromaDB storage.\n")
+        print(f" [BATCH {batch_idx}] Successfully wrote {len(document_batch)} vector payloads to ChromaDB storage.\n")
         
-    print(f"\n🏁 Ingestion complete! Processed and indexed a total of {total_payload_count} chunks.")
+    print(f"\n Ingestion complete! Processed and indexed a total of {total_payload_count} chunks.")

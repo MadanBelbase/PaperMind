@@ -7,10 +7,7 @@ DB_DIR = BASE_DIR / "chroma_db"
 OLLAMA_MODEL = "llama3.2:3b"
 
 
-def retrieve_global_knowledge() -> str:
-    """
-    Pulls the high-level summary blueprints of ALL papers simultaneously.
-    """
+def retrieve_global_knowledge() -> str: 
     chroma_client = chromadb.PersistentClient(path=str(DB_DIR))
     try:
         collection = chroma_client.get_collection(name="paper_summaries")
@@ -41,7 +38,7 @@ def retrieve_deep_chunks(query_text: str, n_results: int = 4) -> str:
 
 def ask_rag_engine(user_question: str, mode: str = "deep"):
     if mode == "global":
-        print("🌐 Scanning global cross-paper summaries portfolio...")
+        print("Scanning global cross-paper summaries portfolio.")
         context = retrieve_global_knowledge()
         system_instruction = (
             "You are PaperMind, an elite academic advisor analyzing a full collection of papers.\n"
@@ -79,8 +76,6 @@ def ask_rag_engine(user_question: str, mode: str = "deep"):
 
 
 if __name__ == "__main__":
-    print("PaperMind Hybrid RAG Engine Online.")
-    print("Standard mode: Searches inside individual page snippets.")
     print("Global mode: Type 'global ' before your question to look across ALL papers details.")
 
     while True:

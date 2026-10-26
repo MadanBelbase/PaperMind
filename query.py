@@ -16,10 +16,9 @@ def get_all_papers():
     try:
         collection = chroma_client.get_collection(name="academic_papers")
         
-        # Get all metadatas from the DB
+
         results = collection.get(include=["metadatas"])
         
-        # Extract unique source names using a set
         unique_papers = sorted(list(set(item["source"] for item in results["metadatas"] if "source" in item)))
         
         print(f"\n📚 Current Indexed Papers ({len(unique_papers)} total):")
