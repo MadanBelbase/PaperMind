@@ -8,8 +8,6 @@ from chunker import AcademicTextChunker
 BASE_DIR = Path(__file__).resolve().parent
 PAPER_DIR = BASE_DIR / "data" / "papers"
 DB_DIR = BASE_DIR / "chroma_db" 
-
-
 def process_single_pdf(pdf_path: Path, chunk_size: int, chunk_overlap: int) -> list[dict]:
     pymupdf.TOOLS.mupdf_display_errors(False)
     try:
@@ -24,7 +22,6 @@ def process_single_pdf(pdf_path: Path, chunk_size: int, chunk_overlap: int) -> l
             except Exception as page_err:
                 print(f"Error reading Page {page.number + 1} in {pdf_path.name}: {page_err}")
                 page_text = ""
-            
             if page_text.strip():
                 raw_page_chunks = chunker.split_text(page_text)
                 for index, chunk in enumerate(raw_page_chunks):
@@ -54,20 +51,16 @@ def stream_pipeline_batches(paper_dir: Path, chunk_size: int = 1000, chunk_overl
     if not paper_dir.exists():
         print(f"Directory {paper_dir} does not exist.")
         return
-
     pdf_files = list(paper_dir.glob("*.pdf"))
     total_files = len(pdf_files)
-    print(f"🚀 Found {total_files} papers. Dispatching to CPU pool workers...\n")
-
+    print(f"Found {total_files} papers. Dispatching to CPU pool workers...\n")
     max_workers = max(1, os.cpu_count() - 1)
     batch = []
-    
     with ProcessPoolExecutor(max_workers=max_workers) as executor:
         future_to_pdf = {
             executor.submit(process_single_pdf, pdf, chunk_size, chunk_overlap): pdf 
             for pdf in pdf_files
         }
-        
         for future in as_completed(future_to_pdf):
             pdf_path = future_to_pdf[future]
             try:
@@ -82,34 +75,25 @@ def stream_pipeline_batches(paper_dir: Path, chunk_size: int = 1000, chunk_overl
             
             while len(batch) >= batch_size:
                 yield batch[:batch_size]
-                batch = batch[batch_size:]
-                
+                batch = batch[batch_size:]            
     if batch:
         yield batch
-
-
 if __name__ == "__main__":
     CHUNK_SIZE = 1000
     CHUNK_OVERLAP = 200
-    BATCH_SIZE = 50  
-    
+    BATCH_SIZE = 50   
     chroma_client = chromadb.PersistentClient(path=str(DB_DIR))
-    collection = chroma_client.get_or_create_collection(name="academic_papers")
-    
+    collection = chroma_client.get_or_create_collection(name="academic_papers") 
     total_payload_count = 0
-    unique_id_counter = 0
-    
+    unique_id_counter = 0 
     for batch_idx, document_batch in enumerate(stream_pipeline_batches(PAPER_DIR, CHUNK_SIZE, CHUNK_OVERLAP, BATCH_SIZE)):
         total_payload_count += len(document_batch)
-        
         batch_ids = []
         batch_documents = []
         batch_metadatas = []
-        
         for doc in document_batch:
             clean_filename = doc['metadata']['source'].replace(" ", "_")
             doc_id = f"{clean_filename}_p{doc['metadata']['page']}_c{doc['metadata']['chunk_segment_id']}_{unique_id_counter}"
-            
             batch_ids.append(doc_id)
             batch_documents.append(doc['text'])
             batch_metadatas.append(doc['metadata'])

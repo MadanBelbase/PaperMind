@@ -7,7 +7,7 @@ class AcademicTextChunker:
         self.chunk_size = chunk_size
         self.chunk_overlap = chunk_overlap
 
-    def split_text(self, text: str) -> list[str]:
+    def split_text(self, text: str) -> list[str]:st
         clean_text = re.sub(r"\s+", " ", text).strip()
         chunks = []
         start = 0
